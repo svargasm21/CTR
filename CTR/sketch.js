@@ -9,6 +9,7 @@ let toadWait, toadReady, candy;
 let win;
 
 let ropeManager;          // ropes  (part 1)
+let mouseCutter;          // mouse rope-cutting  (part 2)
 let levelIndex = 0;
 let candyEaten = false;
 let showRopeDebug = true; // D key: rope numbers + loose/taut/stretched
@@ -23,6 +24,7 @@ async function setup() {
   world = engine.world;
 
   ropeManager = new RopeManager(engine);
+  mouseCutter = new MouseCutter(ropeManager);
   loadLevel(0);
 }
 
@@ -77,6 +79,7 @@ function draw() {
   goal1.display();
   ropeManager.display(showRopeDebug);
   if (!candyEaten) box1.display();
+  mouseCutter.display(); // part 2: slash trail on top of the ropes
 
   push();
   fill(0);
@@ -121,4 +124,34 @@ function keyPressed() {
   } else if (/^[1-9]$/.test(key)) {
     ropeManager.cutRope(Number(key));
   }
+}
+
+// Mouse rope-cutting (part 2). Drag across a rope to slice it.
+function mousePressed() {
+  if (!mouseCutter) return; // still loading
+  mouseCutter.start(mouseX, mouseY);
+}
+
+function mouseDragged() {
+  if (!mouseCutter) return;
+  mouseCutter.drag(mouseX, mouseY);
+}
+
+function mouseReleased() {
+  if (!mouseCutter) return;
+  mouseCutter.end();
+}
+
+// Touch support: p5 maps touch to mouseX/mouseY, so reuse the same logic.
+function touchStarted() {
+  if (mouseCutter) mouseCutter.start(mouseX, mouseY);
+}
+
+function touchMoved() {
+  if (mouseCutter) mouseCutter.drag(mouseX, mouseY);
+  return false; // stop the browser from scrolling while slicing
+}
+
+function touchEnded() {
+  if (mouseCutter) mouseCutter.end();
 }
